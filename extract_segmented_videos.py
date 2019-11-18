@@ -5,6 +5,7 @@ import random
 import subprocess
 import multiprocessing
 
+
 def local_clip(filename, start_time, duration, output_filename, output_directory):
     end_time = start_time + duration
     command = ['ffmpeg',
@@ -25,17 +26,23 @@ def local_clip(filename, start_time, duration, output_filename, output_directory
         return err.output
 
 
-def wrapper(clip):
-    input_directory = '/'
-    output_directory = '/'
-    duration = clip['end']-clip['start']
-    filename = clip['url'].split('=')[-1]
-    local_clip(os.path.join(input_directory,filename+'.mkv'), clip['start'], duration, clip['clip_name']+'.mp4', output_directory)
+def wrapper(clips):
+    cnt = 0
+    for clip in clips:
+        input_directory = '../videos/'
+        output_directory = '../videos/'
+        duration = clip['end']-clip['start']
+        filename = clip['url'].split('=')[-1]
+        if(filename == "RHlEdXq2DuI"):
+            local_clip(os.path.join(input_directory, filename+'.mp4'), clip['start'], duration, filename+str(cnt)+'_out.mp4', output_directory)
+            cnt += 1
     return 0
-    
 
-with open('data/mlb-youtube-segmented.json', 'r') as f:
+
+#with open('data/mlb-youtube-segmented.json', 'r') as f:
+with open('data/backup_segmented.json', 'r') as f:
     data = json.load(f)
-    pool = multiprocessing.Pool(processes=8)
-    pool.map(wrapper, [data[k] for k in data.keys()])
-    
+    #pool = multiprocessing.Pool(processes=8)
+    #pool.map(wrapper, [data[k] for k in data.keys()])
+    wrapper([data[k] for k in data.keys()])
+
