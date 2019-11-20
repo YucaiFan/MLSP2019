@@ -51,40 +51,49 @@ def output_frames_as_pics(frame_list):
 def detect_and_show_circles(input_img, output_img):
     # detect circles in the image
     input_gray = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(input_gray, cv2.HOUGH_GRADIENT, 1, 100, param1=100,param2=10,maxRadius=10,minRadius=5)
+    circles = cv2.HoughCircles(input_gray, cv2.HOUGH_GRADIENT, 1, 25, param1=750,param2=5,maxRadius=10,minRadius=7)
 
     # ensure at least some circles were found
     if circles is not None:
         # convert the (x, y) coordinates and radius of the circles to integers
         circles = np.round(circles[0, :]).astype("int")
-        print(circles)
         # loop over the (x, y) coordinates and radius of the circles
         for (x, y, r) in circles:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            # if(x>=400 and x<=500):
-            cv2.circle(output_img, (x, y), r, (0, 255, 0), 4)
+            if(x>=500 and y>=200 and x<=800 and y<=600):
+                print([x,y,r])
+                cv2.circle(output_img, (x, y), r, (0, 255, 0), 4)
             # cv2.rectangle(output_img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
         # show the output image
 #         return output_img
 #         plt.imshow(np.hstack([input_img, output_img]))
+    return output_img
 
-    cv2.imwrite("res.png", output_img)
 
+def run(directory):
+    for filename in os.listdir(directory):
+        if("cir" not in filename):
+            print(filename)
+            im_cv = cv2.imread(directory+"/"+filename)
+            # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
+            output = im_cv.copy()
+            out_img=detect_and_show_circles(im_cv, output)
+            cv2.imwrite(directory+"/cir_" + filename, out_img)
 # gif_ball = cv2.VideoCapture('haha.mp4')
 # print(git_ball)
 
 # frame_list = convert_gif_to_frames(gif_ball)
 # print(len(frame_list), len(frame_list[0]), len(frame_list[1]))
 # im_cv = frame_list[35]
-
+run("./pitch")
 # im_cv = cv2.imread("test.jpeg")
-im_cv = cv2.imread("ball.png")
-im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
-# plt.imshow(im_rgb)
-
-output = im_rgb.copy()
-# plt.imshow(im_rgb)
-detect_and_show_circles(im_rgb, output)
+# im_cv = cv2.imread("ball.png")
+# im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
+# # plt.imshow(im_rgb)
+#
+# output = im_rgb.copy()
+# # plt.imshow(im_rgb)
+# detect_and_show_circles(im_rgb, output)
 
