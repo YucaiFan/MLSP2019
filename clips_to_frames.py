@@ -37,7 +37,7 @@ def save_frames(frames, path):
 
 input_root = 'MLSPdata/clips/'
 #input_root = '../MLSPdata/clips/' # Harold's computer
-input_clipname = "RHlEdXq2DuI" # folder name
+input_clipname = "RHlEdXq2DuI_7" # folder name
 input_folder = input_root + input_clipname
 
 output_root = 'MLSPdata/frames/'
@@ -53,6 +53,9 @@ files = os.listdir(input_folder)
 
 for filename in files:
     if not os.path.isdir(filename):
+        if filename[-4:] != ".mp4":
+            continue
+        
         f = input_folder+"/"+filename
         print("source: " + f)
         clip = cv2.VideoCapture(f)
