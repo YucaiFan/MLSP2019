@@ -1,2 +1,2 @@
 *.mkv
-MLSPdata/frames/*
+*.ipynb_checkpoints
