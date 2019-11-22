@@ -2,11 +2,16 @@ import cv2
 import os
 import numpy as np
 from matplotlib import pyplot as plt
+import re
 
 
 '''This is the command to read in the GIF. You need Videocapture which makes a cv2 Video Object.
 Add your GIF file name in the parameter of this function.
 '''
+def sorted_aphanumeric(data):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    return sorted(data, key=alphanum_key)
 
 def convert_gif_to_frames(gif):
 
@@ -48,46 +53,98 @@ def output_frames_as_pics(frame_list):
     for frames_idx in range(len(frame_list_reduce)):
         cv2.imwrite(os.path.join(path + '/' + folder_name, str(frames_idx+1) + '.png'), frame_list_reduce[frames_idx])
 
-def detect_and_show_circles(input_img, output_img):
+def detect_and_show_circles(input_img, output_img,box):
     # detect circles in the image
     input_gray = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(input_gray, cv2.HOUGH_GRADIENT, 1, 25, param1=750,param2=5,maxRadius=10,minRadius=7)
-
+    circles = cv2.HoughCircles(input_gray, cv2.HOUGH_GRADIENT, 1, 100, param1=100,param2=1,maxRadius=10,minRadius=7)
+    (xmin,ymin,xmax,ymax)=box
     # ensure at least some circles were found
     if circles is not None:
         # convert the (x, y) coordinates and radius of the circles to integers
         circles = np.round(circles[0, :]).astype("int")
+        circles=circles[circles[:, 1].argsort()]
+        # print(circles)
         # loop over the (x, y) coordinates and radius of the circles
+        foundBall=False
+        ball=(0,0,0)
         for (x, y, r) in circles:
-            # draw the circle in the output image, then draw a rectangle
-            # corresponding to the center of the circle
-            if(x>=500 and y>=200 and x<=800 and y<=600):
+        #     # draw the circle in the output image, then draw a rectangle
+        #     # corresponding to the center of the circle
+            if(x>=xmin and y>=ymin and x<=xmax and y<=ymax and not foundBall):
                 print([x,y,r])
                 cv2.circle(output_img, (x, y), r, (0, 255, 0), 4)
-            # cv2.rectangle(output_img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                ball=(x,y,r)
+                foundBall=True
+                # cv2.rectangle(output_img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
         # show the output image
 #         return output_img
 #         plt.imshow(np.hstack([input_img, output_img]))
-    return output_img
+    return output_img,ball
 
-
+def showArc(img,ballLocal):
+    for (x, y, r) in ballLocal:
+        cv2.circle(img, (x, y), r, (0, 255, 0), 4)
+        # cv2.rectangle(img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+    return img
 def run(directory):
-    for filename in os.listdir(directory):
-        if("cir" not in filename):
-            print(filename)
-            im_cv = cv2.imread(directory+"/"+filename)
-            # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
-            output = im_cv.copy()
-            out_img=detect_and_show_circles(im_cv, output)
-            cv2.imwrite(directory+"/cir_" + filename, out_img)
+    ball=(0,0,0)
+    xmin=340
+    xmax=800
+    ymin=200
+    ymax=480
+    box=(xmin,ymin,xmax,ymax)
+    firstFrame=True
+    baseballs=[]
+    img=[]
+    for filename in sorted_aphanumeric(os.listdir(directory)):
+        if("cir_" not in str(filename) and "Trajectory" not in str(filename)):
+            if(firstFrame):
+                print("cir" not in filename)
+                im_cv = cv2.imread(directory+"/"+filename)
+                img=im_cv
+                # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
+                output = im_cv.copy()
+                out_img,newBall=detect_and_show_circles(im_cv, output,box)
+                cv2.imwrite(directory+"/cir_" + filename, out_img)
+                ball=newBall
+                baseballs.append(ball)
+                firstFrame=False
+            else:
+                print("cir" not in filename)
+                (x,y,r)=ball
+                if x==0 and y==0 and r==0:
+                    xmin = 340
+                    xmax = 800
+                    ymin = 200
+                    ymax = 480
+                    box = (xmin, ymin, xmax, ymax)
+                else:
+                    offset=100
+                    xmin = x
+                    xmax = x+offset
+                    ymin = y-offset
+                    ymax = y+offset
+                    box = (xmin, ymin, xmax, ymax)
+                print(filename)
+                im_cv = cv2.imread(directory + "/" + filename)
+                # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
+                output = im_cv.copy()
+                out_img, newBall = detect_and_show_circles(im_cv, output, box)
+                cv2.imwrite(directory + "/cir_" + filename, out_img)
+                ball = newBall
+                baseballs.append(ball)
+    baseballs=np.array(baseballs)
+    TrasjectoryImage=showArc(img,baseballs)
+    cv2.imwrite(directory + "/Trajectory.jpg", TrasjectoryImage)
+    return baseballs
 # gif_ball = cv2.VideoCapture('haha.mp4')
 # print(git_ball)
 
 # frame_list = convert_gif_to_frames(gif_ball)
 # print(len(frame_list), len(frame_list[0]), len(frame_list[1]))
 # im_cv = frame_list[35]
-run("./pitch")
+baseballs=run("./pitch")
 # im_cv = cv2.imread("test.jpeg")
 # im_cv = cv2.imread("ball.png")
 # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
