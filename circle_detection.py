@@ -3,6 +3,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 import re
+import json
 
 
 '''This is the command to read in the GIF. You need Videocapture which makes a cv2 Video Object.
@@ -89,7 +90,7 @@ def showArc(img,ballLocal):
     return img
 def run(directory):
     ball=(0,0,0)
-    xmin=340
+    xmin=300
     xmax=800
     ymin=200
     ymax=480
@@ -98,9 +99,9 @@ def run(directory):
     baseballs=[]
     img=[]
     for filename in sorted_aphanumeric(os.listdir(directory)):
-        if("cir_" not in str(filename) and "Trajectory" not in str(filename)):
+        if("cir_" not in str(filename) and "Trajectory" not in str(filename) and "blob" in str(filename)):
             if(firstFrame):
-                print("cir" not in filename)
+                # print("cir" not in filename)
                 im_cv = cv2.imread(directory+"/"+filename)
                 img=im_cv
                 # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
@@ -114,13 +115,13 @@ def run(directory):
                 print("cir" not in filename)
                 (x,y,r)=ball
                 if x==0 and y==0 and r==0:
-                    xmin = 340
+                    xmin = 300
                     xmax = 800
                     ymin = 200
                     ymax = 480
                     box = (xmin, ymin, xmax, ymax)
                 else:
-                    offset=100
+                    offset=20
                     xmin = x
                     xmax = x+offset
                     ymin = y-offset
@@ -136,7 +137,8 @@ def run(directory):
                 baseballs.append(ball)
     baseballs=np.array(baseballs)
     TrasjectoryImage=showArc(img,baseballs)
-    cv2.imwrite(directory + "/Trajectory.jpg", TrasjectoryImage)
+    if (baseballs.size!=0):
+        cv2.imwrite(directory + "/Trajectory.jpg", TrasjectoryImage)
     return baseballs
 # gif_ball = cv2.VideoCapture('haha.mp4')
 # print(git_ball)
@@ -144,7 +146,37 @@ def run(directory):
 # frame_list = convert_gif_to_frames(gif_ball)
 # print(len(frame_list), len(frame_list[0]), len(frame_list[1]))
 # im_cv = frame_list[35]
-baseballs=run("./pitch")
+# path="./videos/frames/RHlEdXq2DuI113_out"
+path="./pitch"
+baseballs=run(path)
+# find label
+clipName=path.split('/')[-1].split('_')[0]
+labelFile=open("./videos/Videolabels",'r')
+lines=labelFile.readlines()
+label="N/A"
+for line in lines:
+    clipNameFile=line.split(" ")[0].split('.')[0].split("_")[0]
+    # print(clipName,clipNameFile)
+    if clipName==clipNameFile:
+        label=line.split(" ")[1].strip('\n')
+data={}
+data['balls']=[]
+data['label']=[]
+data['frames']=[]
+for x in range(0,baseballs.shape[0]):
+    x,y,r=baseballs[0]
+    data['balls'].append({
+        'X': str(x),
+        'Y': str(y),
+    })
+data['label'].append({
+    'label': str(label)
+})
+data['frames'].append({
+    'frames': str(baseballs.shape[0])
+})
+with open(path+"/"+clipName+".json", 'w') as outfile:
+    json.dump(data, outfile)
 # im_cv = cv2.imread("test.jpeg")
 # im_cv = cv2.imread("ball.png")
 # im_rgb = cv2.cvtColor(im_cv, cv2.COLOR_BGR2RGB)
