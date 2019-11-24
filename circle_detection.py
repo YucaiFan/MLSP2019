@@ -17,7 +17,7 @@ def sorted_aphanumeric(data):
 def detect_and_show_circles(input_img, output_img,box):
     # detect circles in the image
     input_gray = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(input_gray, cv2.HOUGH_GRADIENT, 1, 100, param1=100,param2=1,maxRadius=10,minRadius=7)
+    circles = cv2.HoughCircles(input_gray, cv2.HOUGH_GRADIENT, 1, 100, param1=100,param2=1,maxRadius=10,minRadius=4)
     (xmin,ymin,xmax,ymax)=box
     # ensure at least some circles were found
     ball = (0, 0, 0)
@@ -84,6 +84,7 @@ def writeJSON(path,baseballs):
 
 def run(directory):
     ball=(0,0,0)
+    lastBall=(0,0,0)
     xmin=300
     xmax=800
     ymin=200
@@ -105,16 +106,20 @@ def run(directory):
                 out_img,newBall=detect_and_show_circles(im_cv, output,box)
                 cv2.imwrite(directory+"/cir_" + filename, out_img)
                 ball=newBall
+                lastBall=ball
                 baseballs.append(ball)
                 firstFrame=False
             else:
                 # print("cir" not in filename)
                 (x,y,r)=ball
+                (oldX,oldY,oldR)=lastBall
                 if x==0 and y==0 and r==0:
-                    xmin = 300
-                    xmax = 800
-                    ymin = 200
-                    ymax = 480
+                    # print(lastBall)
+                    shift=100
+                    xmin = oldX
+                    xmax = oldX+shift
+                    ymin = oldY-20
+                    ymax = oldY+shift
                     box = (xmin, ymin, xmax, ymax)
                     missedBall=True
                 else:
@@ -131,7 +136,10 @@ def run(directory):
                 out_img, newBall = detect_and_show_circles(im_cv, output, box)
                 cv2.imwrite(directory + "/cir_" + filename, out_img)
                 ball = newBall
-                baseballs.append(ball)
+                (x,y,r)=ball
+                if x!=0 and y!=0:
+                    baseballs.append(ball)
+                    lastBall=ball
     baseballs=np.array(baseballs)
     TrasjectoryImage=showArc(img,baseballs)
     if (baseballs.size!=0):
