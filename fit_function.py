@@ -17,6 +17,7 @@ def load_json(filename):
     ys = []
 
     with open(filename) as json_file:
+        print(filename)
         data = json.load(json_file)
         for p in data['balls']:
             xs.append(int(p['X']))
@@ -26,7 +27,7 @@ def load_json(filename):
         hand = const.HAND_MAP[data["Hand"]]
         frame = int(data["frames"])
 
-    return xs, ys, label, hand, frame
+    return xs, ys, xs[0], xs[len(xs)-1], label, hand, frame
 
 
 def plot_check(factors, xs, ys, filename):
@@ -54,7 +55,7 @@ def get_fit_func(xs, ys, filename):
 
     factors = np.polyfit(xs, ys, 2)
     # factors = np.polynomial.Polynomial.fit(xs, ys, 4)
-    print('factor :\n', factors)
+    # print('factor :\n', factors)
 
     # plot_check(factors, xs, ys, filename)
 
@@ -69,11 +70,13 @@ def main():
     train_label = []
     for filename in files:
 
-        xs, ys, label, hand, frame = load_json(json_filepath + filename)
+        xs, ys, start, end, label, hand, frame = load_json(json_filepath + filename)
 
         params = get_fit_func(xs, ys, filename)
 
         data = [param for param in params]
+        data.append(start)
+        data.append(end)
         data.append(hand)
         data.append(frame)
 
