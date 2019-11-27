@@ -49,7 +49,7 @@ def showArc(img,ballLocal):
         # cv2.rectangle(img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
     return img
 
-def writeJSON(path,baseballs,frame_count):
+def writeJSON(path,baseballs):
     clipName = path.split('/')[-1].split('_')[0]
     labelFile = open("./videos/Videolabels", 'r')
     lines = labelFile.readlines()
@@ -61,20 +61,20 @@ def writeJSON(path,baseballs,frame_count):
             label = line.split(" ")[1].strip('\n')
     data = {}
     data['balls'] = []
-    data['label'] = label
-    data['frames'] = str(frame_count)
-    firstX,t,r=baseballs[0]
-    if firstX<450:
-        hand="L"
-    else:
-        hand="R"
-    data['Hand']=hand
-    for i in range(0, baseballs.shape[0]):
-        x, y, r = baseballs[i]
+    data['label'] = []
+    data['frames'] = []
+    for x in range(0, baseballs.shape[0]):
+        x, y, r = baseballs[0]
         data['balls'].append({
             'X': str(x),
             'Y': str(y),
         })
+    data['label'].append({
+        'label': str(label)
+    })
+    data['frames'].append({
+        'frames': str(baseballs.shape[0])
+    })
     output_path="./videos/dataCollection"
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -95,10 +95,8 @@ def run(directory):
     img=[]
     missedBall=False
     print("Finding Circles in",directory)
-    frame_count=1
     for filename in sorted_aphanumeric(os.listdir(directory)):
         if("cir_" not in str(filename) and "Trajectory" not in str(filename) and "blob" in str(filename)):
-            frame_count+=1
             if(firstFrame):
                 # print("cir" not in filename)
                 im_cv = cv2.imread(directory+"/"+filename)
@@ -148,7 +146,7 @@ def run(directory):
         print("Balls Found")
         cv2.imwrite(directory + "/Trajectory.jpg", TrasjectoryImage)
         print("Writing JSON")
-        writeJSON(directory,baseballs,frame_count)
+        writeJSON(directory,baseballs)
     if missedBall:
         print("Wrote too LostBalls file")
         MissesFile = open("./videos/LostBalls", "a")
