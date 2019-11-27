@@ -50,8 +50,10 @@ for frame in frame_subtract_list:
 frame_subtract_list_reshape = [frame_subtract_list[j].reshape((720, 1280)) for j in range(len(frame_subtract_list))]
 
 ct = 1
+
+
 for blob_image in frame_subtract_list_reshape:
-    #blob_image[240:480,:420] = 0
+    blob_image[240:480,:420] = 0
     image_no_noise = Image.fromarray(blob_image.astype('uint8'))  # turn into an image
     image_no_noise.save('frames/Blob_frames/blob_image_' + str(ct) + '.jpg')
     ct += 1

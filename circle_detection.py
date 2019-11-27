@@ -45,8 +45,9 @@ def detect_and_show_circles(input_img, output_img,box):
 
 def showArc(img,ballLocal):
     for (x, y, r) in ballLocal:
+        #x = 720
         cv2.circle(img, (x, y), r, (0, 255, 0), 4)
-        # cv2.rectangle(img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+        #cv2.rectangle(img, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
     return img
 
 def writeJSON(path,baseballs):
@@ -86,9 +87,9 @@ def run(directory):
     ball=(0,0,0)
     lastBall=(0,0,0)
     xmin=300
-    xmax=800
+    xmax=610
     ymin=200
-    ymax=480
+    ymax=400
     box=(xmin,ymin,xmax,ymax)
     firstFrame=True
     baseballs=[]
@@ -115,11 +116,11 @@ def run(directory):
                 (oldX,oldY,oldR)=lastBall
                 if x==0 and y==0 and r==0:
                     # print(lastBall)
-                    shift=100
+                    shift=80
                     xmin = oldX
                     xmax = oldX+shift
                     ymin = oldY-20
-                    ymax = oldY+shift
+                    ymax = oldY+shift/2
                     box = (xmin, ymin, xmax, ymax)
                     missedBall=True
                 else:
