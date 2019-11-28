@@ -6,7 +6,7 @@ import time
 A=[x[0] for x in os.walk("./videos/frames")]
 # print(A.index("./videos/frames/RHlEdXq2DuI17_out"),len(A))
 # A=A[115:250]
-# print(A)
+print(A)
 errorFile=open("./videos/LostBalls", "w")
 errorFile.close()
 start=time.time()

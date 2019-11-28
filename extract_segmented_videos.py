@@ -22,27 +22,50 @@ def local_clip(filename, start_time, duration, output_filename, output_directory
         output = subprocess.check_output(command, shell=True,
                                          stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        print err.output
+        print(err.output)
         return err.output
 
-
-def wrapper(clips):
-    cnt = 0
-    for clip in clips:
-        input_directory = '../videos/'
-        output_directory = '../videos/'
-        duration = clip['end']-clip['start']
-        filename = clip['url'].split('=')[-1]
-        if(filename == "RHlEdXq2DuI"):
-            local_clip(os.path.join(input_directory, filename+'.mp4'), clip['start'], duration, filename+str(cnt)+'_out.mp4', output_directory)
-            cnt += 1
-    return 0
-
-
+import tqdm
 #with open('data/mlb-youtube-segmented.json', 'r') as f:
 with open('data/backup_segmented.json', 'r') as f:
     data = json.load(f)
     #pool = multiprocessing.Pool(processes=8)
     #pool.map(wrapper, [data[k] for k in data.keys()])
-    wrapper([data[k] for k in data.keys()])
+    clips = [data[k] for k in data.keys()]
+    clipnames = [k for k in data.keys()]
 
+    assert(len(clips) == len(clipnames))
+    
+    videoname_list = ["RHlEdXq2DuI", "nYkRFMXKtU0", "91YyEVUeO8I", "yC7tb1umUqw"]
+    type_list = ["changeup", "slider", "curveball"] #"knucklecurve",
+    for i in tqdm.trange(len(clips)):
+        clipname = clipnames[i]
+        clip = clips[i]
+        input_directory = '../MLSPdata/videos/'
+        output_directory = '../MLSPdata/clips/'
+        duration = clip['end']-clip['start']
+        videoname = clip['url'].split('=')[-1]
+        
+        if 'type' in clip.keys():
+#            print(clip['type'])
+            if clip['type'] not in type_list:
+                continue
+#            else:
+#                print(videoname)
+
+        
+        if not os.path.exists(os.path.join(input_directory, videoname+'.mp4')):
+#            print("can't find: " + input_directory + videoname + '.mp4')
+            continue
+
+        if os.path.exists(output_directory+clipname + "/" + clipname + '.mp4'):
+#            print("already exists: " + output_directory+clipname + "/" +clipname + '.mp4')
+            continue
+
+        if videoname in videoname_list:
+            if not os.path.exists(output_directory + clipname):
+                os.makedirs(output_directory + clipname)
+#            local_clip(os.path.join(input_directory, filename+'.mp4'), clip['start'], duration, filename+str(cnt)+'_out.mp4', output_directory)
+            local_clip(os.path.join(input_directory, videoname+'.mp4'), clip['start'], duration, clipname+'.mp4', output_directory+clipname+"/")
+
+print("Complete!")

@@ -32,36 +32,46 @@ def convert_gif_to_frames(gif):
 
 def save_frames(frames, path):
     for i in tqdm.trange(len(frames)):
-        cv2.imwrite(path[:-5]+str(i)+".jpg", frames[i])
+        cv2.imwrite(path[:-4]+"_"+str(i)+".jpg", frames[i])
 
 
-input_root = 'MLSPdata/clips/'
+input_root = '../MLSPdata/clips/'
 #input_root = '../MLSPdata/clips/' # Harold's computer
-input_clipname = "RHlEdXq2DuI_7" # folder name
-input_folder = input_root + input_clipname
 
-output_root = 'MLSPdata/frames/'
-#output_root = '../MLSPdata/frames/' # Harold's computer
-output_path = output_root + input_clipname + '/'
-output_folder = os.path.exists(output_path)
-print("output: "+output_path)
-if not output_folder:
-    os.makedirs(output_path)
+input_clipname_list = []
+
+clips = os.listdir(input_root)
+for filename in clips:
+    if(filename != ".DS_Store"):
+        input_clipname_list.append(filename)
+
+#input_clipname_list = ["RHlEdXq2DuI_14", ] # folder name
+
+for input_clipname in input_clipname_list:
+    input_folder = input_root + input_clipname
+
+    output_root = '../MLSPdata/frames/'
+    #output_root = '../MLSPdata/frames/' # Harold's computer
+    output_path = output_root + input_clipname + '/'
+    output_folder = os.path.exists(output_path)
+    print("output: "+output_path)
+    if not output_folder:
+        os.makedirs(output_path)
 
 
-files = os.listdir(input_folder)
-
-for filename in files:
-    if not os.path.isdir(filename):
-        if filename[-4:] != ".mp4":
-            continue
-        
-        f = input_folder+"/"+filename
-        print("source: " + f)
-        clip = cv2.VideoCapture(f)
-        frame_list = convert_gif_to_frames(clip)
-        print("frame length: %d, each frame: %d x %d" % (len(frame_list), len(frame_list[0]), len(frame_list[0][1])))
-        save_frames(frame_list, output_path+filename)
+    files = os.listdir(input_folder)
+    for filename in files:
+        if not os.path.isdir(filename):
+            if filename[-4:] != ".mp4":
+                continue
+            
+            f = input_folder+"/"+filename
+            print("source: " + f)
+            clip = cv2.VideoCapture(f)
+            frame_list = convert_gif_to_frames(clip)
+            print("frame length: %d, each frame: %d x %d" % (len(frame_list), len(frame_list[0]), len(frame_list[0][1])))
+            print(output_path+filename)
+            save_frames(frame_list, output_path+filename)
 
 
 
