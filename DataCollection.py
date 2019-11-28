@@ -18,8 +18,8 @@ for folder in A:
     print(counter,"out of",total,".",(counter/total)*100,"% complete")
     counter+=1
 print("Ran in",(time.time()-start)/60,"minutes")
-# run("./videos/frames/RHlEdXq2DuI66_out")
+#run("./videos/frames/RHlEdXq2DuI66_out")
 
-#path="./videos/frames/RHlEdXq2DuI50_out"
-#Blob(path)
-#run(path)
+# path="./videos/frames/RHlEdXq2DuI35_out"
+# #Blob(path)
+# run(path)

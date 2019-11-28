@@ -57,12 +57,18 @@ def get_fit_func(xs, ys, filename):
     # factors = np.polynomial.Polynomial.fit(xs, ys, 4)
     # print('factor :\n', factors)
 
-    # plot_check(factors, xs, ys, filename)
+    plot_check(factors, xs, ys, filename)
 
     return factors
 
 
-def main():
+def test_single():
+    filename = 'RHlEdXq2DuI35.json'
+    xs, ys, start, end, label, hand, frame = load_json(json_filepath + filename)
+    get_fit_func(xs, ys, filename)
+
+
+def run_all():
 
     files = os.listdir(json_filepath)
 
@@ -72,6 +78,8 @@ def main():
 
         xs, ys, start, end, label, hand, frame = load_json(json_filepath + filename)
 
+        if len(xs) <= 1:
+            continue
         params = get_fit_func(xs, ys, filename)
 
         data = [param for param in params]
@@ -89,6 +97,10 @@ def main():
     np.savetxt("train_data.csv", train_data, delimiter=",")
     np.savetxt("train_label.csv", train_label, delimiter=",")
 
+
+def main():
+    # test_single()
+    run_all()
 
 if __name__ == '__main__':
     main()
