@@ -51,13 +51,13 @@ def showArc(img,ballLocal):
 
 def writeJSON(path,baseballs,frame_count):
     clipName = path.split('/')[-1].split('_')[0]
-    labelFile = open("./videos/Videolabels", 'r')
+    labelFile = open("../MLSPdata/Labels.txt", 'r')
     lines = labelFile.readlines()
     label = "N/A"
     for line in lines:
-        clipNameFile = line.split(" ")[0].split('.')[0].split("_")[0]
-        # print(clipName,clipNameFile)
-        if clipName == clipNameFile:
+        clipNameFile = line.split(" ")
+        print(clipName,clipNameFile)
+        if clipName in clipNameFile:
             label = line.split(" ")[1].strip('\n')
     data = {}
     data['balls'] = []
@@ -75,7 +75,7 @@ def writeJSON(path,baseballs,frame_count):
             'X': str(x),
             'Y': str(y),
         })
-    output_path="./videos/dataCollection"
+    output_path="../MLSPdata/Jsons"
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     with open(output_path+ "/" + clipName + ".json", 'w') as outfile:
@@ -97,12 +97,12 @@ def run(directory):
     print("Finding Circles in",directory)
     frame_count=1
 
-    print("="*20)
-    print(sorted_aphanumeric(os.listdir(directory)))
-    for filename in sorted_aphanumeric(os.listdir(directory)):
+
+    for filename in sorted_aphanumeric(os.listdir(directory))[:-1]:
         if("cir_" not in str(filename) and "Trajectory" not in str(filename) and "blob" in str(filename)):
             frame_count+=1
             if(firstFrame):
+                print("="*20)
                 # print("cir" not in filename)
                 im_cv = cv2.imread(directory+"/"+filename)
                 img=im_cv
